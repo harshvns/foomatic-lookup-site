@@ -24,7 +24,17 @@ async function combineData() {
     const drivers = new Map();
     const printerToDrivers = new Map();
 
-    // Load drivers
+    // Load printers from PRINTERS_DIR
+    const printerFiles = fs.readdirSync(PRINTERS_DIR);
+    for (const file of printerFiles) {
+        if (file.endsWith('.json')) {
+            const printerData = JSON.parse(fs.readFileSync(path.join(PRINTERS_DIR, file), 'utf-8'));
+            const printer = printerData.printer;
+            printers.set(printer['@id'], printer);
+        }
+    }
+
+    // Load drivers and find new printers
     const driverFiles = fs.readdirSync(DRIVERS_DIR);
     for (const file of driverFiles) {
         if (file.endsWith('.json')) {
@@ -40,18 +50,23 @@ async function combineData() {
                         printerToDrivers.set(printerId, []);
                     }
                     printerToDrivers.get(printerId).push(driver['@id']);
+
+                    if (!printers.has(printerId)) {
+                        const newPrinter = {};
+                        newPrinter['@id'] = printerId;
+                        const parts = printerId.substring('printer/'.length).split('-');
+                        newPrinter.make = parts[0].replace(/_/g, ' ');
+                        newPrinter.model = parts.slice(1).join('-').replace(/_/g, ' ');
+                        newPrinter.mechanism = {};
+                        newPrinter.functionality = '?';
+                        newPrinter.driver = driver['@id'].substring('driver/'.length);
+                        if (printerRef.comments) {
+                            newPrinter.comments = printerRef.comments;
+                        }
+                        printers.set(printerId, newPrinter);
+                    }
                 }
             }
-        }
-    }
-
-    // Load printers
-    const printerFiles = fs.readdirSync(PRINTERS_DIR);
-    for (const file of printerFiles) {
-        if (file.endsWith('.json')) {
-            const printerData = JSON.parse(fs.readFileSync(path.join(PRINTERS_DIR, file), 'utf-8'));
-            const printer = printerData.printer;
-            printers.set(printer['@id'], printer);
         }
     }
 
@@ -60,16 +75,31 @@ async function combineData() {
         const recommendedDriverId = `driver/${printer.driver}`;
         const driverIds = printerToDrivers.get(printerId) || [];
 
-        const driverDetails = driverIds.map(driverId => {
-            const driver = drivers.get(driverId);
-            return {
-                id: driver['@id'],
-                name: driver.name,
-                url: driver.url,
-                comments: driver.comments ? driver.comments.en : '',
-                execution: driver.execution,
-            };
-        });
+        const driverDetails = driverIds
+            .map(driverId => drivers.get(driverId))
+            .filter(Boolean) // Filter out undefined drivers
+            .map(driver => {
+                return {
+                    id: driver['@id'],
+                    name: driver.name,
+                    url: driver.url,
+                    comments: driver.comments ? driver.comments.en : '',
+                    execution: driver.execution,
+                };
+            });
+
+        let type = 'unknown';
+        if (printer.mechanism) {
+            if (printer.mechanism.inkjet !== undefined) {
+                type = 'inkjet';
+            } else if (printer.mechanism.laser !== undefined) {
+                type = 'laser';
+            } else if (printer.mechanism.dotmatrix !== undefined) {
+                type = 'dot-matrix';
+            } else if (printer.mechanism.transfer === 'i') {
+                type = 'inkjet';
+            }
+        }
 
         combinedPrinters.push({
             id: printer['@id'].replace('printer/', ''),
@@ -79,7 +109,7 @@ async function combineData() {
             connectivity: [], // Not available
             recommended_driver: recommendedDriverId,
             drivers: driverDetails,
-            type: printer.mechanism && printer.mechanism.transfer === 'i' ? 'inkjet' : 'laser', // Example logic
+            type: type,
             status: getFunctionalityStatus(printer.functionality),
             notes: printer.comments ? printer.comments.en : '',
         });

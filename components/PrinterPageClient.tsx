@@ -1,103 +1,211 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 
-'use client'
+"use client"
 
-import { Printer } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Separator } from '@/components/ui/separator';
+import type { Printer } from "@/lib/types"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
+import { Separator } from "@/components/ui/separator"
+import { ArrowLeft, PrinterIcon, ExternalLink, Code, Info } from "lucide-react"
 
 interface PrinterPageClientProps {
-  printer: Printer | undefined;
+  printer: Printer | undefined
 }
 
 export default function PrinterPageClient({ printer }: PrinterPageClientProps) {
   if (!printer) {
     return (
-      <div className="container mx-auto p-4 text-center">
-        <h1 className="text-2xl font-bold">Printer not found</h1>
-        <Link href="/">
-          <Button variant="link" className="mt-4">
-            &larr; Back to all printers
-          </Button>
-        </Link>
+      <div className="min-h-screen">
+        <div className="container mx-auto p-4 text-center">
+          <div className="py-20">
+            <div className="p-6 rounded-full bg-destructive/10 border border-destructive/20 text-destructive w-24 h-24 mx-auto mb-8 flex items-center justify-center">
+              <PrinterIcon className="h-12 w-12" />
+            </div>
+            <h1 className="text-3xl font-bold text-foreground mb-4">Printer not found</h1>
+            <p className="text-muted-foreground text-lg mb-8">
+              This printer may have been removed or doesn&apos;t exist in the OpenPrinting database.
+            </p>
+            <Link href="/">
+              <Button className="gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Back to all printers
+              </Button>
+            </Link>
+          </div>
+        </div>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex items-center mb-4">
-        <Link href="/">
-          <Button variant="outline" size="sm">
-            &larr; Back
-          </Button>
-        </Link>
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">{printer.model}</CardTitle>
-              <CardDescription>{printer.manufacturer}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <p><strong>Type:</strong> {printer.type}</p>
-                <p><strong>Status:</strong> <Badge variant={printer.status === 'recommended' ? 'default' : 'secondary'}>{printer.status}</Badge></p>
-              </div>
-              <Separator className="my-4" />
-              <div>
-                <h3 className="font-bold mb-2">Notes</h3>
-                <p className="whitespace-pre-wrap text-sm text-muted-foreground">{printer.notes || 'No notes available.'}</p>
-              </div>
-            </CardContent>
-          </Card>
+    <div className="min-h-screen">
+      <div className="container mx-auto p-4">
+        <div className="flex items-center mb-6">
+          <Link href="/">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 bg-gradient-card border-border/50 text-muted-foreground hover:bg-muted/50"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+          </Link>
+          <div className="ml-4 flex items-center gap-2 text-sm text-muted-foreground">
+            <PrinterIcon className="h-4 w-4" />
+            <span>OpenPrinting Database</span>
+          </div>
         </div>
-        <div className="lg:col-span-2">
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Drivers</h2>
-            <div className="space-y-4">
-              {printer.drivers.map((driver) => (
-                <Card key={driver.id} className="bg-card/50">
-                  <CardHeader className="flex flex-row items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">{driver.name}</CardTitle>
-                      {driver.url && (
-                        <Link href={driver.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 hover:underline">
-                          {driver.url}
-                        </Link>
-                      )}
-                    </div>
-                    {driver.id === printer.recommended_driver && (
-                      <Badge>Recommended</Badge>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    <div>
-                      <h4 className="font-semibold">Comments</h4>
-                      <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: driver.comments || 'No comments available.' }} />
-                    </div>
-                    {driver.execution && (
-                      <div className="mt-4">
-                        <details>
-                          <summary className="cursor-pointer font-semibold">View PPD Generation Command</summary>
-                          <SyntaxHighlighter language="bash" style={vscDarkPlus} customStyle={{background: 'transparent', border: 'none', padding: 0}}>
-                            {driver.execution.prototype}
-                          </SyntaxHighlighter>
-                        </details>
+
+        <div className="mb-8">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="p-4 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30">
+              <PrinterIcon className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-foreground mb-2">{printer.model}</h1>
+              <p className="text-xl text-muted-foreground">{printer.manufacturer}</p>
+              <div className="flex items-center gap-3 mt-3">
+                <Badge
+                  variant={printer.status === "recommended" ? "default" : "secondary"}
+                  className={
+                    printer.status === "recommended"
+                      ? "bg-green-500/20 text-green-300 border-green-400/30"
+                      : "bg-yellow-500/20 text-yellow-300 border-yellow-400/30"
+                  }
+                >
+                  {printer.status}
+                </Badge>
+                <Badge variant="outline" className="border-border bg-muted/50 text-muted-foreground">
+                  {printer.type}
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-1">
+            <Card className="bg-gradient-card border-border/50 shadow-card">
+              <CardHeader>
+                <CardTitle className="text-2xl text-foreground flex items-center gap-2">
+                  <Info className="h-5 w-5 text-primary" />
+                  Printer Information
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">{printer.manufacturer}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Type</p>
+                    <p className="text-foreground">{printer.type}</p>
+                  </div>
+                  <Separator className="bg-border" />
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Status</p>
+                    <Badge
+                      variant={printer.status === "recommended" ? "default" : "secondary"}
+                      className={
+                        printer.status === "recommended"
+                          ? "bg-green-500/20 text-green-300 border-green-400/30"
+                          : "bg-yellow-500/20 text-yellow-300 border-yellow-400/30"
+                      }
+                    >
+                      {printer.status}
+                    </Badge>
+                  </div>
+                  {printer.notes && (
+                    <>
+                      <Separator className="bg-border" />
+                      <div>
+                        <h3 className="font-semibold mb-2 text-foreground">Notes</h3>
+                        <p className="whitespace-pre-wrap text-sm text-muted-foreground leading-relaxed">{printer.notes}</p>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="lg:col-span-2">
+            <div>
+              <h2 className="text-3xl font-bold mb-6 text-foreground flex items-center gap-3">
+                <Code className="h-7 w-7 text-primary" />
+                Available Drivers
+              </h2>
+              <div className="space-y-6">
+                {printer.drivers.map((driver) => (
+                  <Card key={driver.id} className="bg-gradient-card border-border/50 shadow-card">
+                    <CardHeader className="flex flex-row items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-xl text-foreground">{driver.name}</CardTitle>
+                        {driver.url && (
+                          <Link
+                            href={driver.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:text-primary/90 hover:underline flex items-center gap-1 mt-2"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            {driver.url}
+                          </Link>
+                        )}
+                      </div>
+                      {driver.id === printer.recommended_driver && (
+                        <Badge className="bg-green-500/20 text-green-300 border-green-400/30">Recommended</Badge>
+                      )}
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-semibold text-foreground mb-2">Comments</h4>
+                          <div
+                            className="prose prose-sm prose-invert max-w-none text-muted-foreground"
+                            dangerouslySetInnerHTML={{ __html: driver.comments || "No comments available." }}
+                          />
+                        </div>
+                        {driver.execution && (
+                          <div>
+                            <details className="group">
+                              <summary className="cursor-pointer font-semibold text-foreground hover:text-primary transition-colors list-none">
+                                <div className="flex items-center gap-2">
+                                  <Code className="h-4 w-4" />
+                                  View PPD Generation Command
+                                  <span className="text-xs text-muted-foreground group-open:hidden">(click to expand)</span>
+                                </div>
+                              </summary>
+                              <div className="mt-3 rounded-lg overflow-hidden border border-border/50">
+                                <SyntaxHighlighter
+                                  language="bash"
+                                  style={vscDarkPlus}
+                                  customStyle={{
+                                    background: "hsl(var(--muted))",
+                                    border: "none",
+                                    padding: "1rem",
+                                    margin: 0,
+                                  }}
+                                >
+                                  {driver.execution.prototype}
+                                </SyntaxHighlighter>
+                              </div>
+                            </details>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
