@@ -48,7 +48,7 @@ export default function HomePage() {
     }
 
     if (searchQuery === "" && selectedManufacturer === "all") {
-      setFilteredPrinters(result.slice(0, 20))
+      setFilteredPrinters([])
     } else {
       setFilteredPrinters(result)
     }
