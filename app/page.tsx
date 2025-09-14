@@ -18,7 +18,9 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchData() {
       setLoading(true)
-      const res = await fetch("/foomatic-db/printers.json")
+      // Use process.env.NODE_ENV to determine the correct base path
+      const basePath = process.env.NODE_ENV === 'production' ? '/foomatic-lookup-site' : ''
+      const res = await fetch(`${basePath}/foomatic-db/printers.json`)
       const data = await res.json()
       setPrinters(data.printers)
       setFilteredPrinters(data.printers)
