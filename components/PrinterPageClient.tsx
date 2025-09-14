@@ -140,7 +140,14 @@ export default function PrinterPageClient({ printer }: PrinterPageClientProps) {
                 Available Drivers
               </h2>
               <div className="space-y-6">
-                {printer.drivers.map((driver) => (
+                {printer.drivers
+                  .sort((a, b) => {
+                    // Put recommended driver first
+                    if (a.id === printer.recommended_driver) return -1;
+                    if (b.id === printer.recommended_driver) return 1;
+                    return 0;
+                  })
+                  .map((driver) => (
                   <Card key={driver.id} className="bg-gradient-card border-border/50 shadow-card">
                     <CardHeader className="flex flex-row items-start justify-between">
                       <div className="flex-1">
