@@ -1,8 +1,8 @@
-import type { Printer } from "@/lib/types"
+import type { PrinterSummary } from "@/lib/types"
 import PrinterCard from "./PrinterCard"
 
 interface PrintersProps {
-  printers: Printer[]
+  printers: PrinterSummary[]
 }
 
 export default function Printers({ printers }: PrintersProps) {

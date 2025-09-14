@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 
-import type { Printer } from "@/lib/types"
+import type { PrinterSummary } from "@/lib/types"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { PrinterIcon } from "lucide-react"
 
 interface PrinterCardProps {
-  printer: Printer
+  printer: PrinterSummary
 }
 
 export default function PrinterCard({ printer }: PrinterCardProps) {
@@ -31,7 +31,9 @@ export default function PrinterCard({ printer }: PrinterCardProps) {
           </div>
         </CardHeader>
         <CardContent className="flex-grow pb-3">
-          {printer.notes && <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">{printer.notes}</p>}
+          <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+            {printer.driverCount ? `${printer.driverCount} driver${printer.driverCount > 1 ? 's' : ''} available` : 'No drivers available'}
+          </p>
         </CardContent>
         <CardFooter className="pt-0">
           <div className="flex flex-wrap gap-2 w-full">
@@ -48,11 +50,13 @@ export default function PrinterCard({ printer }: PrinterCardProps) {
             >
               {printer.status}
             </Badge>
-            {printer.drivers && (
-              <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/10">
-                {printer.drivers.length} drivers
-              </Badge>
-            )}
+            {
+              (printer.driverCount ?? 0) >= 0 && (
+                <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/10">
+                  {printer.driverCount ?? 0} driver{(printer.driverCount ?? 0) > 1 ? 's' : ''}
+                </Badge>
+              )
+            }
           </div>
         </CardFooter>
       </Card>

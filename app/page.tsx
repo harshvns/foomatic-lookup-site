@@ -1,15 +1,15 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import type { Printer } from "@/lib/types"
+import type { PrinterSummary } from "@/lib/types"
 import PrinterSearch from "@/components/PrinterSearch"
 import Printers from "@/components/Printers"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PrinterIcon, Database, Zap, Shield } from "lucide-react"
 
 export default function HomePage() {
-  const [printers, setPrinters] = useState<Printer[]>([])
-  const [filteredPrinters, setFilteredPrinters] = useState<Printer[]>([])
+  const [printers, setPrinters] = useState<PrinterSummary[]>([])
+  const [filteredPrinters, setFilteredPrinters] = useState<PrinterSummary[]>([])
   const [manufacturers, setManufacturers] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedManufacturer, setSelectedManufacturer] = useState("all")
@@ -18,16 +18,21 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchData() {
       setLoading(true)
-      // Use process.env.NODE_ENV to determine the correct base path
-      const basePath = process.env.NODE_ENV === 'production' ? '/foomatic-lookup-site' : ''
-      const res = await fetch(`${basePath}/foomatic-db/printers.json`)
-      const data = await res.json()
-      setPrinters(data.printers)
-      setFilteredPrinters(data.printers)
+      try {
+        // Use process.env.NODE_ENV to determine the correct base path
+        const basePath = process.env.NODE_ENV === 'production' ? '/foomatic-lookup-site' : ''
+        const res = await fetch(`${basePath}/foomatic-db/printersMap.json`)
+        const data = await res.json()
+        setPrinters(data.printers)
+        setFilteredPrinters(data.printers)
 
-      const uniqueManufacturers = [...new Set(data.printers.map((p: Printer) => p.manufacturer))].sort()
-      setManufacturers(uniqueManufacturers as string[])
-      setLoading(false)
+        const uniqueManufacturers = [...new Set(data.printers.map((p: PrinterSummary) => p.manufacturer))].sort()
+        setManufacturers(uniqueManufacturers as string[])
+      } catch (error) {
+        console.error('Failed to load printer data:', error)
+      } finally {
+        setLoading(false)
+      }
     }
     fetchData()
   }, [])

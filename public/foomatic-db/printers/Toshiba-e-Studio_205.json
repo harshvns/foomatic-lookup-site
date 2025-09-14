@@ -1,0 +1,12 @@
+{
+  "id": "Toshiba-e-Studio_205",
+  "manufacturer": "Toshiba",
+  "model": "e-Studio 205",
+  "series": "",
+  "connectivity": [],
+  "recommended_driver": "driver/Postscript-Toshiba",
+  "drivers": [],
+  "type": "laser",
+  "status": "perfect",
+  "notes": ""
+}
