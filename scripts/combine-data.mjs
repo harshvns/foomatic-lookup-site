@@ -24,7 +24,6 @@ async function combineData() {
     const drivers = new Map();
     const printerToDrivers = new Map();
 
-    // Load printers from PRINTERS_DIR
     const printerFiles = fs.readdirSync(PRINTERS_DIR);
     for (const file of printerFiles) {
         if (file.endsWith('.json')) {
@@ -34,7 +33,6 @@ async function combineData() {
         }
     }
 
-    // Load drivers and find new printers
     const driverFiles = fs.readdirSync(DRIVERS_DIR);
     for (const file of driverFiles) {
         if (file.endsWith('.json')) {
@@ -77,7 +75,7 @@ async function combineData() {
 
         const driverDetails = driverIds
             .map(driverId => drivers.get(driverId))
-            .filter(Boolean) // Filter out undefined drivers
+            .filter(Boolean)
             .map(driver => {
                 return {
                     id: driver['@id'],
@@ -105,8 +103,8 @@ async function combineData() {
             id: printer['@id'].replace('printer/', ''),
             manufacturer: printer.make,
             model: printer.model,
-            series: '', // Not available
-            connectivity: [], // Not available
+            series: '',
+            connectivity: [],
             recommended_driver: recommendedDriverId,
             drivers: driverDetails,
             type: type,

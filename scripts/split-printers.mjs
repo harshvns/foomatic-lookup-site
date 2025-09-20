@@ -11,17 +11,14 @@ async function splitPrintersData() {
   try {
     console.log('🚀 Starting printer data splitting process...')
     
-    // Read the original printers.json file
     const printersPath = path.join(__dirname, '..', 'public', 'foomatic-db', 'printers.json')
     const data = JSON.parse(await fs.readFile(printersPath, 'utf-8'))
     
     console.log(`📊 Found ${data.printers.length} printers to process`)
     
-    // Create directories for individual printer files
     const printersDir = path.join(__dirname, '..', 'public', 'foomatic-db', 'printers')
     await fs.mkdir(printersDir, { recursive: true })
     
-    // Create lightweight index map
     const printersMap = {
       printers: data.printers.map(printer => ({
         id: printer.id,
