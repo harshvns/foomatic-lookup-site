@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { PrinterIcon } from "lucide-react"
+import { calculateAccurateStatus } from "@/lib/utils/status"
 
 interface PrinterCardProps {
   printer: PrinterSummary
@@ -13,6 +14,7 @@ interface PrinterCardProps {
 
 export default function PrinterCard({ printer }: PrinterCardProps) {
   const printerId = printer.id.replace("printer/", "")
+  const accurateStatus = calculateAccurateStatus(printer)
 
   const getStatusStyling = (status: string) => {
     switch (status.toLowerCase()) {
@@ -81,10 +83,10 @@ export default function PrinterCard({ printer }: PrinterCardProps) {
               {printer.type}
             </Badge>
             <Badge
-              variant={getStatusStyling(printer.status).variant}
-              className={getStatusStyling(printer.status).className}
+              variant={getStatusStyling(accurateStatus).variant}
+              className={getStatusStyling(accurateStatus).className}
             >
-              {printer.status}
+              {accurateStatus}
             </Badge>
             {
               (printer.driverCount ?? 0) >= 0 && (
