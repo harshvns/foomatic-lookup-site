@@ -12,51 +12,35 @@ export default function HomePage() {
   const [printers, setPrinters] = useState<PrinterSummary[]>([])
   const [filteredPrinters, setFilteredPrinters] = useState<PrinterSummary[]>([])
   const [manufacturers, setManufacturers] = useState<string[]>([])
-  // Load filters from localStorage on mount
-  const [searchQuery, setSearchQuery] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("printerSearchQuery") || ""
-    }
-    return ""
-  })
-  const [selectedManufacturer, setSelectedManufacturer] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("printerManufacturer") || "all"
-    }
-    return "all"
-  })
-  const [selectedType, setSelectedType] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("printerType") || "all"
-    }
-    return "all"
-  })
-  const [selectedStatus, setSelectedStatus] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("printerStatus") || "all"
-    }
-    return "all"
-  })
-  const [selectedDriverFilter, setSelectedDriverFilter] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("printerDriverFilter") || "all"
-    }
-    return "all"
-  })
+  // Initialize with default values to avoid hydration mismatch
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedManufacturer, setSelectedManufacturer] = useState("all")
+  const [selectedType, setSelectedType] = useState("all")
+  const [selectedStatus, setSelectedStatus] = useState("all")
+  const [selectedDriverFilter, setSelectedDriverFilter] = useState("all")
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
-  
-  // Dynamic pagination with localStorage persistence
-  const [itemsPerPage, setItemsPerPage] = useState<number>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("printerPageSize")
-      if (saved) {
-        const num = parseInt(saved, 10)
-        if ([20, 50, 100, 200].includes(num)) return num
-      }
+  const [itemsPerPage, setItemsPerPage] = useState<number>(20)
+
+  // Load filters from localStorage after mount (client-side only)
+  useEffect(() => {
+    const savedSearchQuery = localStorage.getItem("printerSearchQuery")
+    const savedManufacturer = localStorage.getItem("printerManufacturer")
+    const savedType = localStorage.getItem("printerType")
+    const savedStatus = localStorage.getItem("printerStatus")
+    const savedDriverFilter = localStorage.getItem("printerDriverFilter")
+    const savedPageSize = localStorage.getItem("printerPageSize")
+
+    if (savedSearchQuery) setSearchQuery(savedSearchQuery)
+    if (savedManufacturer) setSelectedManufacturer(savedManufacturer)
+    if (savedType) setSelectedType(savedType)
+    if (savedStatus) setSelectedStatus(savedStatus)
+    if (savedDriverFilter) setSelectedDriverFilter(savedDriverFilter)
+    if (savedPageSize) {
+      const num = parseInt(savedPageSize, 10)
+      if ([20, 50, 100, 200].includes(num)) setItemsPerPage(num)
     }
-    return 20
-  })
+  }, [])
 
   useEffect(() => {
     async function fetchData() {
@@ -65,7 +49,25 @@ export default function HomePage() {
         // Use process.env.NODE_ENV to determine the correct base path
         const basePath = process.env.NODE_ENV === 'production' ? '/foomatic-lookup-site' : ''
         const res = await fetch(`${basePath}/foomatic-db/printersMap.json`)
+        
+        // Check if response is ok
+        if (!res.ok) {
+          throw new Error(`Failed to fetch: ${res.status} ${res.statusText}`)
+        }
+        
+        // Check content type to ensure it's JSON
+        const contentType = res.headers.get('content-type')
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await res.text()
+          throw new Error(`Expected JSON but got ${contentType}. Response: ${text.substring(0, 100)}`)
+        }
+        
         const data = await res.json()
+        
+        if (!data || !Array.isArray(data.printers)) {
+          throw new Error('Invalid data format: expected printers array')
+        }
+        
         setPrinters(data.printers)
         setFilteredPrinters(data.printers)
 
@@ -73,6 +75,10 @@ export default function HomePage() {
         setManufacturers(uniqueManufacturers as string[])
       } catch (error) {
         console.error('Failed to load printer data:', error)
+        // Set empty arrays on error to prevent UI crashes
+        setPrinters([])
+        setFilteredPrinters([])
+        setManufacturers([])
       } finally {
         setLoading(false)
       }
