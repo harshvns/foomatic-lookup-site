@@ -9,9 +9,14 @@ import type { PrinterSummary, Printer } from "@/lib/types"
  */
 export function calculateAccurateStatus(printer: PrinterSummary | Printer): string {
   // Get driver count - either from driverCount field or drivers array length
-  const driverCount = 'driverCount' in printer 
-    ? (printer.driverCount ?? 0)
-    : (printer.drivers?.length ?? 0)
+  let driverCount = 0
+  if ('driverCount' in printer) {
+    // PrinterSummary type
+    driverCount = printer.driverCount ?? 0
+  } else if ('drivers' in printer) {
+    // Printer type
+    driverCount = printer.drivers?.length ?? 0
+  }
   
   const currentStatus = printer.status?.toLowerCase() || 'unknown'
 

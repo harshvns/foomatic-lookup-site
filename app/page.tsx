@@ -6,18 +6,43 @@ import PrinterSearch from "@/components/PrinterSearch"
 import Printers from "@/components/Printers"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PrinterIcon, Database, Zap, Shield } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { calculateAccurateStatus } from "@/lib/utils/status"
 
 export default function HomePage() {
   const [printers, setPrinters] = useState<PrinterSummary[]>([])
   const [filteredPrinters, setFilteredPrinters] = useState<PrinterSummary[]>([])
   const [manufacturers, setManufacturers] = useState<string[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedManufacturer, setSelectedManufacturer] = useState("all")
-  const [selectedType, setSelectedType] = useState("all")
-  const [selectedStatus, setSelectedStatus] = useState("all")
-  const [selectedDriverFilter, setSelectedDriverFilter] = useState("all")
+  // Load filters from localStorage on mount
+  const [searchQuery, setSearchQuery] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("printerSearchQuery") || ""
+    }
+    return ""
+  })
+  const [selectedManufacturer, setSelectedManufacturer] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("printerManufacturer") || "all"
+    }
+    return "all"
+  })
+  const [selectedType, setSelectedType] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("printerType") || "all"
+    }
+    return "all"
+  })
+  const [selectedStatus, setSelectedStatus] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("printerStatus") || "all"
+    }
+    return "all"
+  })
+  const [selectedDriverFilter, setSelectedDriverFilter] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("printerDriverFilter") || "all"
+    }
+    return "all"
+  })
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   
@@ -62,6 +87,57 @@ export default function HomePage() {
     localStorage.setItem("printerPageSize", num.toString())
     setCurrentPage(1) // Reset to first page when changing page size
   }
+
+  // Reset all filters
+  const handleResetFilters = () => {
+    setSearchQuery("")
+    setSelectedManufacturer("all")
+    setSelectedType("all")
+    setSelectedStatus("all")
+    setSelectedDriverFilter("all")
+    setCurrentPage(1)
+    // Clear from localStorage
+    localStorage.removeItem("printerSearchQuery")
+    localStorage.removeItem("printerManufacturer")
+    localStorage.removeItem("printerType")
+    localStorage.removeItem("printerStatus")
+    localStorage.removeItem("printerDriverFilter")
+  }
+
+  // Persist filters to localStorage when they change
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (searchQuery) {
+        localStorage.setItem("printerSearchQuery", searchQuery)
+      } else {
+        localStorage.removeItem("printerSearchQuery")
+      }
+    }
+  }, [searchQuery])
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("printerManufacturer", selectedManufacturer)
+    }
+  }, [selectedManufacturer])
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("printerType", selectedType)
+    }
+  }, [selectedType])
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("printerStatus", selectedStatus)
+    }
+  }, [selectedStatus])
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("printerDriverFilter", selectedDriverFilter)
+    }
+  }, [selectedDriverFilter])
 
   useEffect(() => {
     let result = printers
@@ -225,11 +301,19 @@ export default function HomePage() {
         <div className="mb-12">
           <PrinterSearch 
             manufacturers={manufacturers} 
-            onSearch={setSearchQuery} 
+            onSearch={setSearchQuery}
+            searchQuery={searchQuery}
+            selectedManufacturer={selectedManufacturer}
+            selectedType={selectedType}
+            selectedStatus={selectedStatus}
+            selectedDriverFilter={selectedDriverFilter}
+            itemsPerPage={itemsPerPage}
             onManufacturerFilter={setSelectedManufacturer}
             onTypeFilter={setSelectedType}
             onStatusFilter={setSelectedStatus}
             onDriverFilter={setSelectedDriverFilter}
+            onItemsPerPageChange={handleItemsPerPageChange}
+            onResetFilters={handleResetFilters}
           />
         </div>
 
@@ -266,32 +350,17 @@ export default function HomePage() {
           </div>
         ) : displayedPrinters.length > 0 ? (
           <div className="animate-fade-in">
+            {/* Results Summary */}
+            <div className="mb-6 text-sm text-muted-foreground">
+              Showing {startIndex + 1}-{Math.min(endIndex, filteredPrinters.length)} of {filteredPrinters.length} printers
+              {searchQuery && ` matching "${searchQuery}"`}
+              {selectedManufacturer !== "all" && ` from ${selectedManufacturer}`}
+            </div>
+            
             <Printers printers={displayedPrinters} />
             
             {/* Pagination Section */}
             <div className="mt-12">
-              {/* Results Summary and Page Size Selector */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-                <div className="text-sm text-muted-foreground">
-                  Showing {startIndex + 1}-{Math.min(endIndex, filteredPrinters.length)} of {filteredPrinters.length} printers
-                  {searchQuery && ` matching "${searchQuery}"`}
-                  {selectedManufacturer !== "all" && ` from ${selectedManufacturer}`}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Items per page:</span>
-                  <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
-                    <SelectTrigger className="w-[140px] h-9 bg-muted/50 border-border/50 text-foreground">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gradient-card border-border">
-                      <SelectItem value="20" className="text-foreground hover:bg-muted/50">20</SelectItem>
-                      <SelectItem value="50" className="text-foreground hover:bg-muted/50">50</SelectItem>
-                      <SelectItem value="100" className="text-foreground hover:bg-muted/50">100</SelectItem>
-                      <SelectItem value="200" className="text-foreground hover:bg-muted/50">200</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
               
               {/* Pagination Controls */}
               {totalPages > 1 && (
