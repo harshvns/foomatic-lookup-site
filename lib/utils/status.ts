@@ -4,29 +4,19 @@ import type { PrinterSummary, Printer } from "@/lib/types"
  * Calculates accurate printer status based on driver availability and functionality
  * Status priority:
  * - If no drivers: unsupported
- * - If status is 'perfect' but no drivers: unsupported
- * - Otherwise use the provided status
+ * - Otherwise use the provided status with appropriate mappings
  */
 export function calculateAccurateStatus(printer: PrinterSummary | Printer): string {
-  // Get driver count - either from driverCount field or drivers array length
   let driverCount = 0
   if ('driverCount' in printer) {
-    // PrinterSummary type
     driverCount = printer.driverCount ?? 0
   } else if ('drivers' in printer) {
-    // Printer type
     driverCount = printer.drivers?.length ?? 0
   }
   
   const currentStatus = printer.status?.toLowerCase() || 'unknown'
 
-  // If no drivers available, status should be unsupported
   if (driverCount === 0) {
-    return 'unsupported'
-  }
-
-  // If status is 'perfect' but no drivers, it's actually unsupported
-  if (currentStatus === 'perfect' && driverCount === 0) {
     return 'unsupported'
   }
 
