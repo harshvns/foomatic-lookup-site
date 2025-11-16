@@ -18,12 +18,12 @@ export default function PrinterCard({ printer }: PrinterCardProps) {
 
   const getStatusStyling = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'recommended':
+      case 'perfect':
         return {
           variant: 'default' as const,
           className: 'bg-green-500/20 text-green-300 border-green-400/30'
         }
-      case 'basic':
+      case 'good':
         return {
           variant: 'secondary' as const,
           className: 'bg-blue-500/20 text-blue-300 border-blue-400/30'

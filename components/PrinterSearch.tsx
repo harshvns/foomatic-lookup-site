@@ -1,7 +1,7 @@
 "use client"
 
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { SimpleSelect } from "@/components/ui/simple-select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
@@ -70,17 +70,19 @@ export default function PrinterSearch({
             {/* Page Size Selector */}
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground hidden sm:inline">Items per page:</span>
-              <Select value={itemsPerPage.toString()} onValueChange={onItemsPerPageChange}>
-                <SelectTrigger className="w-[100px] sm:w-[120px] h-9 bg-muted/50 border-border/50 text-foreground">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-popover/95 backdrop-blur-sm border-border shadow-lg">
-                  <SelectItem value="20" className="text-foreground hover:bg-muted/80 cursor-pointer">20</SelectItem>
-                  <SelectItem value="50" className="text-foreground hover:bg-muted/80 cursor-pointer">50</SelectItem>
-                  <SelectItem value="100" className="text-foreground hover:bg-muted/80 cursor-pointer">100</SelectItem>
-                  <SelectItem value="200" className="text-foreground hover:bg-muted/80 cursor-pointer">200</SelectItem>
-                </SelectContent>
-              </Select>
+              <SimpleSelect
+                value={itemsPerPage.toString()}
+                onValueChange={onItemsPerPageChange}
+                triggerClassName="w-[100px] sm:w-[120px] h-9"
+              >
+                <SimpleSelect.Trigger />
+                <SimpleSelect.Content className="bg-popover/95 backdrop-blur-sm border-border shadow-lg">
+                  <SimpleSelect.Item value="20">20</SimpleSelect.Item>
+                  <SimpleSelect.Item value="50">50</SimpleSelect.Item>
+                  <SimpleSelect.Item value="100">100</SimpleSelect.Item>
+                  <SimpleSelect.Item value="200">200</SimpleSelect.Item>
+                </SimpleSelect.Content>
+              </SimpleSelect>
             </div>
             {/* Reset Filters Button */}
             {hasActiveFilters && (
@@ -123,102 +125,84 @@ export default function PrinterSearch({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Manufacturer Filter */}
             <div className="relative">
-              <Select value={selectedManufacturer} onValueChange={onManufacturerFilter}>
-                <SelectTrigger className="h-12 bg-muted/50 border-border/50 text-foreground focus:border-primary/50 focus:ring-primary/20">
+              <SimpleSelect
+                value={selectedManufacturer}
+                onValueChange={onManufacturerFilter}
+                placeholder="Manufacturer"
+                triggerClassName="h-12"
+              >
+                <SimpleSelect.Trigger>
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4 text-muted-foreground" />
-                    <SelectValue placeholder="Manufacturer" />
+                    <span>All Manufacturers</span>
                   </div>
-                </SelectTrigger>
-                <SelectContent className="bg-popover/95 backdrop-blur-sm border-border shadow-lg max-h-[300px]">
-                  <SelectItem value="all" className="text-foreground hover:bg-muted/80 cursor-pointer">
-                    All Manufacturers
-                  </SelectItem>
+                </SimpleSelect.Trigger>
+                <SimpleSelect.Content className="bg-popover/95 backdrop-blur-sm border-border shadow-lg">
+                  <SimpleSelect.Item value="all">All Manufacturers</SimpleSelect.Item>
                   {manufacturers.map((manufacturer) => (
-                    <SelectItem key={manufacturer} value={manufacturer} className="text-foreground hover:bg-muted/80 cursor-pointer">
+                    <SimpleSelect.Item key={manufacturer} value={manufacturer}>
                       {manufacturer}
-                    </SelectItem>
+                    </SimpleSelect.Item>
                   ))}
-                </SelectContent>
-              </Select>
+                </SimpleSelect.Content>
+              </SimpleSelect>
             </div>
 
             {/* Type Filter */}
             <div className="relative">
-              <Select value={selectedType} onValueChange={onTypeFilter}>
-                <SelectTrigger className="h-12 bg-muted/50 border-border/50 text-foreground focus:border-primary/50 focus:ring-primary/20">
-                  <SelectValue placeholder="Printer Type" />
-                </SelectTrigger>
-                <SelectContent className="bg-popover/95 backdrop-blur-sm border-border shadow-lg">
-                  <SelectItem value="all" className="text-foreground hover:bg-muted/80 cursor-pointer">
-                    All Types
-                  </SelectItem>
-                  <SelectItem value="laser" className="text-foreground hover:bg-muted/80 cursor-pointer">
-                    Laser
-                  </SelectItem>
-                  <SelectItem value="inkjet" className="text-foreground hover:bg-muted/80 cursor-pointer">
-                    Inkjet
-                  </SelectItem>
-                  <SelectItem value="dot-matrix" className="text-foreground hover:bg-muted/80 cursor-pointer">
-                    Dot Matrix
-                  </SelectItem>
-                  <SelectItem value="unknown" className="text-foreground hover:bg-muted/80 cursor-pointer">
-                    Unknown
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <SimpleSelect
+                value={selectedType}
+                onValueChange={onTypeFilter}
+                placeholder="Printer Type"
+                triggerClassName="h-12"
+              >
+                <SimpleSelect.Trigger />
+                <SimpleSelect.Content className="bg-popover/95 backdrop-blur-sm border-border shadow-lg">
+                  <SimpleSelect.Item value="all">All Types</SimpleSelect.Item>
+                  <SimpleSelect.Item value="laser">Laser</SimpleSelect.Item>
+                  <SimpleSelect.Item value="inkjet">Inkjet</SimpleSelect.Item>
+                  <SimpleSelect.Item value="dot-matrix">Dot Matrix</SimpleSelect.Item>
+                  <SimpleSelect.Item value="unknown">Unknown</SimpleSelect.Item>
+                </SimpleSelect.Content>
+              </SimpleSelect>
             </div>
 
             {/* Status Filter */}
             <div className="relative">
-              <Select value={selectedStatus} onValueChange={onStatusFilter}>
-                <SelectTrigger className="h-12 bg-muted/50 border-border/50 text-foreground focus:border-primary/50 focus:ring-primary/20">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent className="bg-popover/95 backdrop-blur-sm border-border shadow-lg">
-                  <SelectItem value="all" className="text-foreground hover:bg-muted/80 cursor-pointer">
-                    All Status
-                  </SelectItem>
-                  <SelectItem value="recommended" className="text-foreground hover:bg-muted/80 cursor-pointer">
-                    Recommended
-                  </SelectItem>
-                  <SelectItem value="basic" className="text-foreground hover:bg-muted/80 cursor-pointer">
-                    Basic
-                  </SelectItem>
-                  <SelectItem value="partial" className="text-foreground hover:bg-muted/80 cursor-pointer">
-                    Partial
-                  </SelectItem>
-                  <SelectItem value="unsupported" className="text-foreground hover:bg-muted/80 cursor-pointer">
-                    Unsupported
-                  </SelectItem>
-                  <SelectItem value="deprecated" className="text-foreground hover:bg-muted/80 cursor-pointer">
-                    Deprecated
-                  </SelectItem>
-                  <SelectItem value="unknown" className="text-foreground hover:bg-muted/80 cursor-pointer">
-                    Unknown
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <SimpleSelect
+                value={selectedStatus}
+                onValueChange={onStatusFilter}
+                placeholder="Status"
+                triggerClassName="h-12"
+              >
+                <SimpleSelect.Trigger />
+                <SimpleSelect.Content className="bg-popover/95 backdrop-blur-sm border-border shadow-lg">
+                  <SimpleSelect.Item value="all">All Status</SimpleSelect.Item>
+                  <SimpleSelect.Item value="perfect">Perfect</SimpleSelect.Item>
+                  <SimpleSelect.Item value="good">Good</SimpleSelect.Item>
+                  <SimpleSelect.Item value="partial">Partial</SimpleSelect.Item>
+                  <SimpleSelect.Item value="unsupported">Unsupported</SimpleSelect.Item>
+                  <SimpleSelect.Item value="deprecated">Deprecated</SimpleSelect.Item>
+                  <SimpleSelect.Item value="unknown">Unknown</SimpleSelect.Item>
+                </SimpleSelect.Content>
+              </SimpleSelect>
             </div>
 
             {/* Driver Availability Filter */}
             <div className="relative">
-              <Select value={selectedDriverFilter} onValueChange={onDriverFilter}>
-                <SelectTrigger className="h-12 bg-muted/50 border-border/50 text-foreground focus:border-primary/50 focus:ring-primary/20">
-                  <SelectValue placeholder="Driver Support" />
-                </SelectTrigger>
-                <SelectContent className="bg-popover/95 backdrop-blur-sm border-border shadow-lg">
-                  <SelectItem value="all" className="text-foreground hover:bg-muted/80 cursor-pointer">
-                    All Printers
-                  </SelectItem>
-                  <SelectItem value="has_drivers" className="text-foreground hover:bg-muted/80 cursor-pointer">
-                    Has Drivers
-                  </SelectItem>
-                  <SelectItem value="no_drivers" className="text-foreground hover:bg-muted/80 cursor-pointer">
-                    No Drivers
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <SimpleSelect
+                value={selectedDriverFilter}
+                onValueChange={onDriverFilter}
+                placeholder="Driver Support"
+                triggerClassName="h-12"
+              >
+                <SimpleSelect.Trigger />
+                <SimpleSelect.Content className="bg-popover/95 backdrop-blur-sm border-border shadow-lg">
+                  <SimpleSelect.Item value="all">All Printers</SimpleSelect.Item>
+                  <SimpleSelect.Item value="has_drivers">Has Drivers</SimpleSelect.Item>
+                  <SimpleSelect.Item value="no_drivers">No Drivers</SimpleSelect.Item>
+                </SimpleSelect.Content>
+              </SimpleSelect>
             </div>
           </div>
         </div>

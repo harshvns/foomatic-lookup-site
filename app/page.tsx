@@ -101,6 +101,7 @@ export default function HomePage() {
     setSelectedType("all")
     setSelectedStatus("all")
     setSelectedDriverFilter("all")
+    setItemsPerPage(20)
     setCurrentPage(1)
     // Clear from localStorage
     localStorage.removeItem("printerSearchQuery")
@@ -108,6 +109,7 @@ export default function HomePage() {
     localStorage.removeItem("printerType")
     localStorage.removeItem("printerStatus")
     localStorage.removeItem("printerDriverFilter")
+    localStorage.removeItem("printerPageSize")
   }
 
   // Persist filters to localStorage when they change

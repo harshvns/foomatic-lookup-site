@@ -20,18 +20,27 @@ export function calculateAccurateStatus(printer: PrinterSummary | Printer): stri
     return 'unsupported'
   }
 
-  // Map 'perfect' to 'recommended' for better UX (as per the styling)
-  if (currentStatus === 'perfect') {
-    return 'recommended'
+  // Map common status variations to standard values
+  const statusMap: Record<string, string> = {
+    'perfect': 'perfect',
+    'perfectly': 'perfect',
+    'good': 'good',
+    'mostly': 'good',
+    'partial': 'partial',
+    'paperweight': 'unsupported',
+    'unsupported': 'unsupported',
+    'deprecated': 'deprecated',
+    'unknown': 'unknown'
   }
 
-  // Map 'good' to 'basic' for consistency
-  if (currentStatus === 'good') {
-    return 'basic'
+  // Return mapped status or the original status if it's already valid
+  const mappedStatus = statusMap[currentStatus]
+  if (mappedStatus) {
+    return mappedStatus
   }
 
-  // Return the status as-is if it's valid
-  const validStatuses = ['recommended', 'basic', 'partial', 'unsupported', 'deprecated', 'unknown']
+  // Return the status as-is if it's a known valid status
+  const validStatuses = ['perfect', 'good', 'partial', 'unsupported', 'deprecated', 'unknown']
   if (validStatuses.includes(currentStatus)) {
     return currentStatus
   }
