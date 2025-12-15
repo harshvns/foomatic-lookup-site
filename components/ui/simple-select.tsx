@@ -91,6 +91,17 @@ export function SimpleSelect({
     }
   }, [isOpen])
 
+  // When opening the listbox, move focus to the selected option (or first option)
+  React.useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => {
+        const el = contentRef.current?.querySelector('[aria-selected="true"]') as HTMLElement | null
+        const first = contentRef.current?.querySelector('[role="option"]') as HTMLElement | null
+        ;(el ?? first)?.focus()
+      }, 0)
+    }
+  }, [isOpen])
+
   // Calculate position when opening
   const handleToggle = () => {
     if (!isOpen && triggerRef.current) {
@@ -127,6 +138,7 @@ export function SimpleSelect({
           )}
           aria-expanded={isOpen}
           aria-haspopup="listbox"
+          aria-label={placeholder ?? "Select"}
         >
           <span className={cn(!value || value === "all" ? "text-muted-foreground" : "")}>
             {getDisplayText()}
@@ -159,10 +171,74 @@ export function SimpleSelectItem({ value, children, className }: SimpleSelectIte
 
   const isSelected = context.value === value
 
+  const itemRef = React.useRef<HTMLDivElement>(null)
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    const el = itemRef.current
+    if (!el) return
+
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault()
+      context.onValueChange(value)
+      return
+    }
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault()
+      let next = el.nextElementSibling as HTMLElement | null
+      while (next && next.getAttribute("role") !== "option") next = next.nextElementSibling as HTMLElement | null
+      if (next) {
+        next.focus()
+      } else {
+        // wrap to first
+        const parent = el.parentElement
+        const first = parent?.querySelector('[role="option"]') as HTMLElement | null
+        first?.focus()
+      }
+      return
+    }
+
+    if (e.key === "ArrowUp") {
+      e.preventDefault()
+      let prev = el.previousElementSibling as HTMLElement | null
+      while (prev && prev.getAttribute("role") !== "option") prev = prev.previousElementSibling as HTMLElement | null
+      if (prev) {
+        prev.focus()
+      } else {
+        // wrap to last
+        const parent = el.parentElement
+        const items = parent?.querySelectorAll('[role="option"]')
+        const last = items && items.length ? (items[items.length - 1] as HTMLElement) : null
+        last?.focus()
+      }
+      return
+    }
+
+    if (e.key === "Home") {
+      e.preventDefault()
+      const parent = el.parentElement
+      const first = parent?.querySelector('[role="option"]') as HTMLElement | null
+      first?.focus()
+      return
+    }
+
+    if (e.key === "End") {
+      e.preventDefault()
+      const parent = el.parentElement
+      const items = parent?.querySelectorAll('[role="option"]')
+      const last = items && items.length ? (items[items.length - 1] as HTMLElement) : null
+      last?.focus()
+      return
+    }
+  }
+
   return (
     <div
+      ref={itemRef}
       role="option"
+      tabIndex={0}
       aria-selected={isSelected}
+      onKeyDown={handleKeyDown}
       onClick={() => context.onValueChange(value)}
       className={cn(
         "relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none",

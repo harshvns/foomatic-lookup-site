@@ -20,6 +20,55 @@ const STORAGE_KEYS = {
   ITEMS_PER_PAGE: 'printer_items_per_page',
 } as const
 
+function PaginationControls({
+  itemsPerPage,
+  setItemsPerPage,
+  setCurrentPage,
+  startIndex,
+  endIndex,
+  filteredLength,
+  totalPages,
+}: {
+  itemsPerPage: number
+  setItemsPerPage: (n: number) => void
+  setCurrentPage: (n: number) => void
+  startIndex: number
+  endIndex: number
+  filteredLength: number
+  totalPages: number
+}) {
+  if (totalPages <= 1) return null
+
+  const displayStart = filteredLength === 0 ? 0 : startIndex + 1
+  const displayEnd = filteredLength === 0 ? 0 : endIndex
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-muted-foreground">Items per page:</span>
+        <select
+          value={itemsPerPage}
+          onChange={(e) => {
+            const value = parseInt(e.target.value, 10)
+            setItemsPerPage(value)
+            setCurrentPage(1)
+          }}
+          className="px-3 py-1.5 rounded-md border border-border/50 bg-gradient-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+        >
+          {ITEMS_PER_PAGE_OPTIONS.map(option => (
+            <option key={option} value={option}>
+              {option === -1 ? 'Show All' : option}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="text-sm text-muted-foreground">
+        Showing {displayStart}-{displayEnd} of {filteredLength} printers
+      </div>
+    </div>
+  )
+}
+
 export default function HomePage() {
   const [printers, setPrinters] = useState<PrinterSummary[]>([])
   const [manufacturers, setManufacturers] = useState<string[]>([])
@@ -47,14 +96,20 @@ export default function HomePage() {
       const savedPage = localStorage.getItem(STORAGE_KEYS.PAGE)
       const savedItemsPerPage = localStorage.getItem(STORAGE_KEYS.ITEMS_PER_PAGE)
       
-      if (savedSearch) setSearchQuery(savedSearch)
-      if (savedManufacturer) setSelectedManufacturer(savedManufacturer)
-      if (savedDriverType) setSelectedDriverType(savedDriverType)
-      if (savedMechanismType) setSelectedMechanismType(savedMechanismType)
-      if (savedSupportLevel) setSelectedSupportLevel(savedSupportLevel)
-      if (savedColorCapability) setSelectedColorCapability(savedColorCapability)
-      if (savedPage) setCurrentPage(parseInt(savedPage, 10))
-      if (savedItemsPerPage) setItemsPerPage(parseInt(savedItemsPerPage, 10))
+      if (savedSearch) setSearchQuery(String(savedSearch))
+      if (savedManufacturer) setSelectedManufacturer(String(savedManufacturer))
+      if (savedDriverType) setSelectedDriverType(String(savedDriverType))
+      if (savedMechanismType) setSelectedMechanismType(String(savedMechanismType))
+      if (savedSupportLevel) setSelectedSupportLevel(String(savedSupportLevel))
+      if (savedColorCapability) setSelectedColorCapability(String(savedColorCapability))
+      if (savedPage) {
+        const p = parseInt(savedPage, 10)
+        setCurrentPage(Number.isFinite(p) && p > 0 ? p : 1)
+      }
+      if (savedItemsPerPage) {
+        const ip = parseInt(savedItemsPerPage, 10)
+        setItemsPerPage(Number.isFinite(ip) ? ip : 20)
+      }
     }
   }, [])
 
@@ -166,10 +221,11 @@ export default function HomePage() {
     if (selectedColorCapability !== "all") {
       result = result.filter((p) => {
         const type = p.type?.toLowerCase() || ''
+        const model = typeof p.model === "string" ? p.model.toLowerCase() : ""
         if (selectedColorCapability === 'color') {
-          return type.includes('color') || type === 'inkjet' || type === 'laser'
+          return type.includes('color') || model.includes('color')
         } else if (selectedColorCapability === 'monochrome') {
-          return type === 'laser' || type === 'dot-matrix'
+          return type.includes('mono') || type.includes('dot-matrix') || model.includes('mono')
         }
         return true
       })
@@ -185,7 +241,7 @@ export default function HomePage() {
   useEffect(() => {
     if (typeof window === 'undefined') return
     
-    localStorage.setItem(STORAGE_KEYS.SEARCH, searchQuery)
+    localStorage.setItem(STORAGE_KEYS.SEARCH, String(searchQuery).trim())
     localStorage.setItem(STORAGE_KEYS.MANUFACTURER, selectedManufacturer)
     localStorage.setItem(STORAGE_KEYS.DRIVER_TYPE, selectedDriverType)
     localStorage.setItem(STORAGE_KEYS.MECHANISM_TYPE, selectedMechanismType)
@@ -219,13 +275,23 @@ export default function HomePage() {
 
   const displayedPrinters = useMemo(() => {
     if (itemsPerPage === -1) return filteredPrinters
-    const startIndex = (currentPage - 1) * itemsPerPage
+    const startIndex = Math.max(0, (currentPage - 1) * itemsPerPage)
     const endIndex = startIndex + itemsPerPage
     return filteredPrinters.slice(startIndex, endIndex)
   }, [filteredPrinters, currentPage, itemsPerPage])
 
-  const startIndex = useMemo(() => (currentPage - 1) * itemsPerPage, [currentPage, itemsPerPage])
-  const endIndex = useMemo(() => Math.min(startIndex + itemsPerPage, filteredPrinters.length), [startIndex, itemsPerPage, filteredPrinters.length])
+  const startIndex = useMemo(() => (itemsPerPage === -1 ? 0 : Math.max(0, (currentPage - 1) * itemsPerPage)), [currentPage, itemsPerPage])
+  const endIndex = useMemo(() => (itemsPerPage === -1 ? filteredPrinters.length : Math.min(startIndex + itemsPerPage, filteredPrinters.length)), [startIndex, itemsPerPage, filteredPrinters.length])
+
+  useEffect(() => {
+    if (itemsPerPage === -1) {
+      setCurrentPage(1)
+      return
+    }
+    if (currentPage > totalPages) {
+      setCurrentPage(Math.max(1, totalPages))
+    }
+  }, [totalPages, itemsPerPage, currentPage])
 
   const goToPage = useCallback((page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -280,35 +346,7 @@ export default function HomePage() {
     return pages
   }, [totalPages, currentPage])
 
-  const PaginationControls = useCallback(() => {
-    if (totalPages <= 1) return null
-
-    return (
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Items per page:</span>
-          <select
-            value={itemsPerPage}
-            onChange={(e) => {
-              const value = parseInt(e.target.value, 10)
-              setItemsPerPage(value)
-              setCurrentPage(1)
-            }}
-            className="px-3 py-1.5 rounded-md border border-border/50 bg-gradient-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-          >
-            {ITEMS_PER_PAGE_OPTIONS.map(option => (
-              <option key={option} value={option}>
-                {option === -1 ? 'Show All' : option}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="text-sm text-muted-foreground">
-          Showing {startIndex + 1}-{endIndex} of {filteredPrinters.length} printers
-        </div>
-      </div>
-    )
-  }, [itemsPerPage, startIndex, endIndex, filteredPrinters.length, totalPages])
+  
 
   return (
     <div>
@@ -416,12 +454,28 @@ export default function HomePage() {
           </div>
         ) : displayedPrinters.length > 0 ? (
           <div className="animate-fade-in">
-            <PaginationControls />
+            <PaginationControls
+              itemsPerPage={itemsPerPage}
+              setItemsPerPage={setItemsPerPage}
+              setCurrentPage={setCurrentPage}
+              startIndex={startIndex}
+              endIndex={endIndex}
+              filteredLength={filteredPrinters.length}
+              totalPages={totalPages}
+            />
             <Printers printers={displayedPrinters} />
             
             {totalPages > 1 && (
               <div className="mt-12">
-                <PaginationControls />
+                <PaginationControls
+                  itemsPerPage={itemsPerPage}
+                  setItemsPerPage={setItemsPerPage}
+                  setCurrentPage={setCurrentPage}
+                  startIndex={startIndex}
+                  endIndex={endIndex}
+                  filteredLength={filteredPrinters.length}
+                  totalPages={totalPages}
+                />
                 
                 <div className="text-center mb-6 text-sm text-muted-foreground">
                   {searchQuery && ` matching "${searchQuery}"`}

@@ -9,18 +9,24 @@ export function cn(...inputs: ClassValue[]) {
 export function calculateAccurateStatus(
   printer: PrinterSummary | Printer
 ): PrinterStatus {
-  const functionality =
-    printer.functionality ||
-    (printer as Printer).status?.toLowerCase()
+  const rawFunctionality =
+  typeof (printer as PrinterSummary).functionality === "string"
+    ? (printer as PrinterSummary).functionality
+    : typeof (printer as Printer).status === "string"
+    ? (printer as Printer).status
+    : undefined
 
-  // ---- FIXED PART ----
+  const functionality = typeof rawFunctionality === "string" ? rawFunctionality : undefined
+
   const driverCount =
-    "driverCount" in printer
-      ? printer.driverCount
-      : "drivers" in printer
-      ? printer.drivers?.length ?? 0
+  "driverCount" in printer
+    ? (printer as PrinterSummary).driverCount
+    : "drivers" in printer
+    ? Array.isArray((printer as Printer).drivers)
+      ? (printer as Printer).drivers!.length
       : 0
-  // --------------------
+    : 0
+
 
   if (!functionality || functionality === "?" || functionality === "unknown") {
     if (driverCount === 0) {

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
 import { useDebounce } from "@/lib/hooks/use-debounce"
-import { Search, Filter, X } from "lucide-react"
+import { Search, X } from "lucide-react"
 
 interface PrinterSearchProps {
   manufacturers: string[]
@@ -96,7 +96,7 @@ export default function PrinterSearch({
             />
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <SimpleSelect
               value={selectedManufacturer}
               onValueChange={onFilterManufacturer}
