@@ -40,7 +40,6 @@ export function SimpleSelect({
   const triggerRef = React.useRef<HTMLButtonElement>(null)
   const contentRef = React.useRef<HTMLDivElement>(null)
 
-  // Get the display text from children
   const getDisplayText = () => {
     let displayText = placeholder || "Select..."
     React.Children.forEach(children, (child) => {
@@ -51,7 +50,6 @@ export function SimpleSelect({
     return displayText
   }
 
-  // Handle click outside to close
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -73,7 +71,6 @@ export function SimpleSelect({
     }
   }, [isOpen])
 
-  // Handle escape key
   React.useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -91,7 +88,6 @@ export function SimpleSelect({
     }
   }, [isOpen])
 
-  // When opening the listbox, move focus to the selected option (or first option)
   React.useEffect(() => {
     if (isOpen) {
       setTimeout(() => {
@@ -102,7 +98,6 @@ export function SimpleSelect({
     }
   }, [isOpen])
 
-  // Calculate position when opening
   const handleToggle = () => {
     if (!isOpen && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect()
@@ -205,7 +200,6 @@ export function SimpleSelectItem({ value, children, className }: SimpleSelectIte
       if (prev) {
         prev.focus()
       } else {
-        // wrap to last
         const parent = el.parentElement
         const items = parent?.querySelectorAll('[role="option"]')
         const last = items && items.length ? (items[items.length - 1] as HTMLElement) : null

@@ -82,7 +82,6 @@ export default function PrinterPageClient({ printerId }: PrinterPageClientProps)
     fetchPrinter()
   }, [printerId])
 
-  // Loading state
   if (loading) {
     return (
       <div className="container mx-auto p-4">
@@ -149,7 +148,6 @@ export default function PrinterPageClient({ printerId }: PrinterPageClientProps)
     )
   }
 
-  // Error / not found state
   if (error || !printer) {
     return (
       <div className="container mx-auto p-4 text-center">
@@ -172,7 +170,6 @@ export default function PrinterPageClient({ printerId }: PrinterPageClientProps)
     )
   }
 
-  // Main content (success)
   return (
     <div className="container mx-auto p-4">
       <div className="flex items-center mb-6">
