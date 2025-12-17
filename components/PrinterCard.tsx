@@ -25,6 +25,11 @@ export default function PrinterCard({ printer }: PrinterCardProps) {
           variant: 'secondary' as const,
           className: 'bg-yellow-500/20 text-yellow-300 border-yellow-400/30'
         }
+      case 'mostly':
+        return {
+          variant: 'secondary' as const,
+          className: 'bg-yellow-500/20 text-yellow-300 border-yellow-400/30'
+        }
       case 'unsupported':
         return {
           variant: 'secondary' as const,

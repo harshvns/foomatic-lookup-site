@@ -24,10 +24,10 @@ export interface Printer {
   functionality?: string
 }
 
-export type PrinterStatus = 'Perfect' | 'Partial' | 'Unsupported' | 'Unknown'
+export type PrinterStatus = 'Perfect' | 'Mostly' | 'Unsupported' | 'Unknown'
 export type DriverType = string
 export type MechanismType = 'inkjet' | 'laser' | 'dot-matrix' | 'unknown'
-export type SupportLevel = 'Perfect' | 'Partial' | 'Unsupported' | 'Unknown'
+export type SupportLevel = 'Perfect' | 'Mostly' | 'Unsupported' | 'Unknown'
 export type ColorCapability = 'color' | 'monochrome' | 'unknown'
 
 export interface PrinterSummary {

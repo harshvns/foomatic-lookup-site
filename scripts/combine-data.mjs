@@ -14,7 +14,7 @@ function getFunctionalityStatus(func) {
             return 'Perfect';
         case 'B':
         case 'C':
-            return 'Partial';
+                return 'Mostly';
         default:
             return 'Unsupported';
     }

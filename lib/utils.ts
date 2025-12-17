@@ -49,7 +49,7 @@ export function calculateAccurateStatus(
     case "GOOD":
     case "C":
     case "PARTIAL":
-      return "Partial"
+      return "Mostly"
 
     case "UNSUPPORTED":
       return "Unsupported"

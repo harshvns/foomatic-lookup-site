@@ -37,8 +37,6 @@ function PaginationControls({
   filteredLength: number
   totalPages: number
 }) {
-  if (totalPages <= 1) return null
-
   const displayStart = filteredLength === 0 ? 0 : startIndex + 1
   const displayEnd = filteredLength === 0 ? 0 : endIndex
 
@@ -133,10 +131,14 @@ export default function HomePage() {
         const manufacturerSet = new Set<string>()
         
         for (const p of data.printers) {
-          const status = p.status || calculateAccurateStatus(p)
+          // Normalize data-provided status values and map legacy 'Partial' to 'Mostly'
+          let status = (p.status || calculateAccurateStatus(p)) as string
+          if (typeof status === 'string' && status.toLowerCase() === 'partial') {
+            status = 'Mostly'
+          }
           const printer = {
             ...p,
-            status
+            status,
           }
           printersWithStatus.push(printer)
           if (p.manufacturer) {
@@ -179,7 +181,7 @@ export default function HomePage() {
   }, [printers])
 
   const supportLevels = useMemo(() => {
-    return ['Perfect', 'Partial', 'Unsupported', 'Unknown']
+    return ['Perfect', 'Mostly', 'Unsupported', 'Unknown']
   }, [])
 
   const colorCapabilities = useMemo(() => {
@@ -467,15 +469,6 @@ export default function HomePage() {
             
             {totalPages > 1 && (
               <div className="mt-12">
-                <PaginationControls
-                  itemsPerPage={itemsPerPage}
-                  setItemsPerPage={setItemsPerPage}
-                  setCurrentPage={setCurrentPage}
-                  startIndex={startIndex}
-                  endIndex={endIndex}
-                  filteredLength={filteredPrinters.length}
-                  totalPages={totalPages}
-                />
                 
                 <div className="text-center mb-6 text-sm text-muted-foreground">
                   {searchQuery && ` matching "${searchQuery}"`}
