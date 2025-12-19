@@ -7,18 +7,17 @@ const OUTPUT_FILE = 'public/foomatic-db/printers.json';
 
 function getFunctionalityStatus(func) {
     if (!func || func === '?') {
-        return 'unknown';
+        return 'Unknown';
     }
-    switch (func) {
-        case 'A':
-            return 'perfect';
-        case 'B':
-            return 'good';
-        case 'C':
-            return 'partial';
-        default:
-            return 'unsupported';
-    }
+    switch (func) {
+        case 'A':
+            return 'Perfect';
+        case 'B':
+        case 'C':
+                return 'Mostly';
+        default:
+            return 'Unsupported';
+    }
 }
 
 function getPrinterType(printer) {
@@ -207,6 +206,10 @@ async function combineData() {
             series = typeof printer.series === 'string' ? printer.series : '';
         }
 
+        const functionality = printer.functionality || '?';
+        const status = getFunctionalityStatus(functionality);
+        const finalStatus = driverDetails.length === 0 && status === 'Unknown' ? 'Unsupported' : status;
+        
         combinedPrinters.push({
             id: printer['@id'].replace('printer/', ''),
             manufacturer: printer.make,
@@ -216,7 +219,8 @@ async function combineData() {
             recommended_driver: recommendedDriverId,
             drivers: driverDetails,
             type: getPrinterType(printer),
-            status: getFunctionalityStatus(printer.functionality || '?'),
+            status: finalStatus,
+            functionality: functionality,
             notes: printer.comments ? (printer.comments.en || printer.comments || '') : '',
         });
     }
